@@ -29,6 +29,8 @@ import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { STABLE_EMPTY_OBJECT } from '@/base/Base.constants.ts';
 import { useAppTitleAndAction } from '@/features/navigation-bar/hooks/useAppTitleAndAction.ts';
 import type { MangaLocationState } from '@/features/manga/Manga.types.ts';
+import { useTouchGestures } from '@/base/hooks/useTouchGestures.ts';
+import { PullToRefreshIndicator } from '@/base/components/feedback/PullToRefreshIndicator.tsx';
 
 export const Manga: React.FC = () => {
     const { t } = useLingui();
@@ -50,6 +52,15 @@ export const Manga: React.FC = () => {
     const [refresh, { loading: refreshing, error: refreshError }] = useRefreshManga(id);
 
     const error = mangaError ?? refreshError;
+
+    const { ref: gestureRef, pullDistance } = useTouchGestures({
+        // fetches the manga and its chapters from the source, same as "Refresh" in the toolbar menu
+        onPullDown: () => {
+            if (!refreshing) {
+                refresh();
+            }
+        },
+    });
 
     useEffect(() => {
         if (manga == null) {
@@ -100,7 +111,8 @@ export const Manga: React.FC = () => {
         return <EmptyViewAbsoluteCentered message={t`Could not load manga`} messageExtra={getErrorMessage(error)} />;
     }
     return (
-        <Box sx={{ display: { md: 'flex' }, overflow: 'hidden' }}>
+        <Box ref={gestureRef} sx={{ display: { md: 'flex' }, overflow: 'hidden' }}>
+            <PullToRefreshIndicator pullDistance={pullDistance} />
             {isLoading && <LoadingPlaceholder />}
 
             {manga && <MangaDetails manga={manga} mode={mode} />}
