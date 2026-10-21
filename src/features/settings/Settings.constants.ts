@@ -54,6 +54,7 @@ export const SERVER_SETTINGS_METADATA_DEFAULT: MetadataServerSettings = {
     fuzzySearch: true,
     removeMangaFromCategories: false,
     showTabSize: false,
+    hideEmptyCategories: true,
     showContinueReadingButton: false,
     showDownloadBadge: false,
     showUnreadBadge: false,
@@ -79,6 +80,8 @@ export const SERVER_SETTINGS_METADATA_DEFAULT: MetadataServerSettings = {
 
     // history
     hideHistory: false,
+    historyClearedAt: 0,
+    incognitoSourceIds: [],
 
     // tracking
     updateProgressAfterReading: true,

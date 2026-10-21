@@ -459,6 +459,10 @@ msgstr "Age rating"
 msgid "All"
 msgstr "All"
 
+#: src/features/history/screens/History.tsx
+msgid "All entries will be removed from the history. Reading progress is kept."
+msgstr "All entries will be removed from the history. Reading progress is kept."
+
 #: src/features/downloads/screens/DownloadSettings.tsx
 msgid "Allow deleting bookmarked chapters"
 msgstr "Allow deleting bookmarked chapters"
@@ -910,6 +914,7 @@ msgid "Cleanup database"
 msgstr "Cleanup database"
 
 #: src/base/collection/components/SelectableCollectionSelectAll.tsx
+#: src/features/history/screens/History.tsx
 msgid "Clear"
 msgstr "Clear"
 
@@ -920,6 +925,10 @@ msgstr "Clear cache"
 #: src/features/settings/screens/ServerSettings.tsx
 msgid "Clear cookies and cache"
 msgstr "Clear cookies and cache"
+
+#: src/features/history/screens/History.tsx
+msgid "Clear history"
+msgstr "Clear history"
 
 #: src/features/manga/components/details/MangaNotes.tsx
 msgid "Clear notes"
@@ -1072,6 +1081,7 @@ msgstr "Could not check for duplicated manga in your library.\n"
 msgid "Could not check for update"
 msgstr "Could not check for update"
 
+#: src/features/library/screens/Library.tsx
 #: src/features/updates/components/UpdateChecker.tsx
 msgid "Could not check for updates"
 msgstr "Could not check for updates"
@@ -1486,6 +1496,10 @@ msgstr "Devices"
 msgid "Disable authentication"
 msgstr "Disable authentication"
 
+#: src/features/browse/sources/components/SourceCard.tsx
+msgid "Disable incognito mode"
+msgstr "Disable incognito mode"
+
 #: src/features/downloads/components/DeleteChaptersWhileReadingSetting.tsx
 #: src/features/reader/settings/layout/components/ReaderSettingTapZoneLayout.tsx
 #: src/features/settings/Settings.constants.ts
@@ -1665,6 +1679,10 @@ msgstr "Enable auto background color in continuous reading mode"
 msgid "Enable debug logs"
 msgstr "Enable debug logs"
 
+#: src/features/browse/sources/components/SourceCard.tsx
+msgid "Enable incognito mode"
+msgstr "Enable incognito mode"
+
 #: src/features/settings/screens/ServerSettings.tsx
 msgid "Enable page read progress"
 msgstr "Enable page read progress"
@@ -1804,6 +1822,7 @@ msgstr "Failed to disconnect from KOReader Sync server."
 #: src/features/downloads/screens/DownloadSettings.tsx
 #: src/features/extension/info/components/SourceCard.tsx
 #: src/features/global-search/screens/SearchAll.tsx
+#: src/features/history/screens/History.tsx
 #: src/features/history/screens/HistorySettings.tsx
 #: src/features/library/components/LibraryOptionsPanel.tsx
 #: src/features/migration/screens/MigrationSelectSource.tsx
@@ -2018,6 +2037,10 @@ msgstr "Hiatus"
 #: src/features/reader/overlay/progress-bar/settings/components/ReaderSettingProgressBarType.tsx
 msgid "Hidden"
 msgstr "Hidden"
+
+#: src/features/library/components/LibraryOptionsPanel.tsx
+msgid "Hide categories without visible entries"
+msgstr "Hide categories without visible entries"
 
 #: src/features/browse/screens/BrowseSettings.tsx
 msgid "Hide entries already in library"
@@ -2363,6 +2386,10 @@ msgstr "Library"
 #: src/features/backup/Backup.constants.ts
 msgid "Library entries"
 msgstr "Library entries"
+
+#: src/features/library/screens/Library.tsx
+msgid "Library update is already running"
+msgstr "Library update is already running"
 
 #: src/features/manga/Manga.constants.ts
 msgid "Licensed"
@@ -4185,6 +4212,10 @@ msgstr "Updates"
 #: src/features/extension/Extensions.constants.ts
 msgid "Updating"
 msgstr "Updating"
+
+#: src/features/library/screens/Library.tsx
+msgid "Updating library"
+msgstr "Updating library"
 
 #: src/features/settings/Settings.constants.ts
 msgid "Uploading"

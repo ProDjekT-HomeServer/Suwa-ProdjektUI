@@ -15,6 +15,8 @@ import { Link } from 'react-router-dom';
 import Stack from '@mui/material/Stack';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import IconButton from '@mui/material/IconButton';
 import { useLingui } from '@lingui/react/macro';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
@@ -31,6 +33,10 @@ import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { languageCodeToName } from '@/base/utils/Languages.ts';
 import { SourceContentType } from '@/features/source/Source.types.ts';
 import { isNsfw } from '@/features/extension/Extensions.utils.ts';
+import {
+    updateMetadataServerSettings,
+    useMetadataServerSettings,
+} from '@/features/settings/services/ServerSettingsMetadata.ts';
 
 interface IProps {
     source: GetSourcesListQuery['sources']['nodes'][number];
@@ -53,12 +59,22 @@ export const SourceCard: React.FC<IProps> = (props: IProps) => {
     } = source;
 
     const { isPinned } = useGetSourceMetadata(source);
+    const {
+        settings: { incognitoSourceIds },
+    } = useMetadataServerSettings();
+    const isIncognito = incognitoSourceIds.includes(id);
 
     const sourceName = Sources.isLocalSource(source) ? t`Local source` : name;
 
     const updateSetting = createUpdateSourceMetadata(source, (e) =>
         makeToast(t`Failed to save changes`, 'error', getErrorMessage(e)),
     );
+
+    const toggleIncognito = () =>
+        updateMetadataServerSettings(
+            'incognitoSourceIds',
+            isIncognito ? incognitoSourceIds.filter((sourceId) => sourceId !== id) : [...incognitoSourceIds, id],
+        ).catch((e) => makeToast(t`Failed to save changes`, 'error', getErrorMessage(e)));
 
     return (
         <Card>
@@ -117,6 +133,18 @@ export const SourceCard: React.FC<IProps> = (props: IProps) => {
                             {t`Latest`}
                         </Button>
                     )}
+                    <CustomTooltip title={isIncognito ? t`Disable incognito mode` : t`Enable incognito mode`}>
+                        <IconButton
+                            {...MUIUtil.preventRippleProp()}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                toggleIncognito();
+                            }}
+                            color={isIncognito ? 'primary' : 'inherit'}
+                        >
+                            {isIncognito ? <VisibilityOffIcon /> : <VisibilityOffOutlinedIcon />}
+                        </IconButton>
+                    </CustomTooltip>
                     <CustomTooltip title={isPinned ? t`Unpin source` : t`Pin source`}>
                         <IconButton
                             {...MUIUtil.preventRippleProp()}

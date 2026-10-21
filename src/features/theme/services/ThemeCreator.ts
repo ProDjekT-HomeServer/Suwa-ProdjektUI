@@ -21,6 +21,7 @@ import { ThemeMode } from '@/features/theme/AppTheme.types.ts';
 import { ThemeFontLoader } from '@/features/theme/services/ThemeFontLoader.ts';
 import { coerceIn } from '@/lib/HelperFunctions.ts';
 import { MediaQuery } from '@/base/utils/MediaQuery.tsx';
+import { LIQUID_GLASS_COMPONENTS } from '@/features/theme/LiquidGlass.ts';
 
 const SCROLLBAR_SIZE = 14;
 
@@ -198,6 +199,7 @@ export const createTheme = (
                 ...appTheme.muiTheme.typography,
             },
             components: {
+                ...LIQUID_GLASS_COMPONENTS,
                 ...appTheme.muiTheme.components,
                 MuiUseMediaQuery: {
                     defaultProps: {

@@ -54,6 +54,15 @@ import { STABLE_EMPTY_ARRAY } from '@/base/Base.constants.ts';
 import type { MangaIdInfo } from '@/features/manga/Manga.types.ts';
 import { OffsetComponent } from '@/base/OffsetComponent.tsx';
 import { MUIUtil } from '@/lib/mui/MUI.util.ts';
+import type { LibraryCategoryVisibleCountValue } from '@/features/library/components/LibraryCategoryVisibleCount.tsx';
+import { LibraryCategoryVisibleCount } from '@/features/library/components/LibraryCategoryVisibleCount.tsx';
+import { useTouchGestures } from '@/base/hooks/useTouchGestures.ts';
+import { useTabSwipe } from '@/base/hooks/useTabSwipe.ts';
+import { LibraryCategoryPreview } from '@/features/library/components/LibraryCategoryPreview.tsx';
+import { PullToRefreshIndicator } from '@/base/components/feedback/PullToRefreshIndicator.tsx';
+import { makeToast } from '@/base/utils/Toast.ts';
+import { getErrorMessage } from '@/lib/HelperFunctions.ts';
+import type { CategoryIdInfo } from '@/features/category/Category.types.ts';
 
 const TitleWithSizeTag = styled('span')({
     display: 'flex',
@@ -69,7 +78,7 @@ export function Library() {
     const theme = useTheme();
 
     const {
-        settings: { showTabSize },
+        settings: { showTabSize, hideEmptyCategories },
     } = useMetadataServerSettings();
 
     const {
@@ -83,7 +92,31 @@ export function Library() {
     const tabsData = categoriesResponse?.categories.nodes.filter(
         (category) => category.id !== 0 || (category.id === 0 && category.mangas.totalCount),
     );
-    const tabs = tabsData ?? STABLE_EMPTY_ARRAY;
+    const allTabs = tabsData ?? STABLE_EMPTY_ARRAY;
+
+    const [visibleCounts, setVisibleCounts] = useState<Record<CategoryIdInfo['id'], LibraryCategoryVisibleCountValue>>(
+        {},
+    );
+    const handleVisibleCountChange = useCallback(
+        (categoryId: CategoryIdInfo['id'], count: LibraryCategoryVisibleCountValue) =>
+            setVisibleCounts((counts) => (counts[categoryId] === count ? counts : { ...counts, [categoryId]: count })),
+        [],
+    );
+    const areVisibleCountsKnown = allTabs.every((tab) => visibleCounts[tab.id] !== undefined);
+
+    const tabs = useMemo(() => {
+        if (!hideEmptyCategories) {
+            return allTabs;
+        }
+
+        const nonEmptyTabs = allTabs.filter((tab) => visibleCounts[tab.id] !== 0);
+        // in case every category is empty, show all of them, otherwise, there would be no way to change the filters
+        return nonEmptyTabs.length ? nonEmptyTabs : allTabs;
+    }, [allTabs, visibleCounts, hideEmptyCategories]);
+
+    const visibleCountReporters = allTabs.map((tab) => (
+        <LibraryCategoryVisibleCount key={tab.id} category={tab} onCountChange={handleVisibleCountChange} />
+    ));
 
     const librarySizeResponse = requestManager.useGetMangas<GetMangasCountQuery, GetMangasCountQueryVariables>(
         GET_MANGAS_COUNT,
@@ -112,11 +145,28 @@ export function Library() {
     } = useGetVisibleLibraryMangas(categoryMangas, activeTab);
 
     const getTabCount = (tab: (typeof tabs)[number]) => {
-        if (mangaLoading || tab !== activeTab || mangas.length === tab.mangas.totalCount) {
-            return tab.mangas.totalCount;
+        if (tab === activeTab && !mangaLoading) {
+            return mangas.length;
         }
 
-        return `${mangas.length}/${tab.mangas.totalCount}`;
+        return visibleCounts[tab.id] ?? tab.mangas.totalCount;
+    };
+
+    const { data: globalUpdateData } = requestManager.useGetGlobalUpdateSummary();
+    const isGlobalUpdateRunning = !!globalUpdateData?.libraryUpdateStatus.jobsInfo.isRunning;
+
+    const startLibraryUpdate = async () => {
+        if (isGlobalUpdateRunning) {
+            makeToast(t`Library update is already running`, 'info');
+            return;
+        }
+
+        try {
+            await requestManager.startGlobalUpdate().response;
+            makeToast(t`Updating library`, 'info');
+        } catch (e) {
+            makeToast(t`Could not check for updates`, 'error', getErrorMessage(e));
+        }
     };
 
     const retryFetchCategoryMangas = useCallback(
@@ -148,6 +198,22 @@ export function Library() {
         },
         [setIsSelectModeActive, handleSelection],
     );
+
+    const activeTabIndex = activeTab ? tabs.indexOf(activeTab) : -1;
+    const previousTab = activeTabIndex > 0 ? tabs[activeTabIndex - 1] : undefined;
+    const nextTab = activeTabIndex >= 0 ? tabs[activeTabIndex + 1] : undefined;
+    const { panelRef, previousPreviewRef, nextPreviewRef, gestureHandlers } = useTabSwipe({
+        activeTabId: activeTab?.id,
+        previousTabId: previousTab?.id,
+        nextTabId: nextTab?.id,
+        onTabChange: setTabSearchParam,
+    });
+    const { ref: gestureRef, pullDistance } = useTouchGestures({
+        ...gestureHandlers,
+        onPullDown: startLibraryUpdate,
+        disabled: isSelectModeActive,
+        ignoreSelector: '[role="tablist"]',
+    });
 
     const selectedMangas = useMemo(
         () =>
@@ -278,9 +344,21 @@ export function Library() {
         return <EmptyViewAbsoluteCentered message={t`Your library is empty`} />;
     }
 
-    if (tabs.length === 1) {
+    // prevent tabs from popping in and out while the visible counts of the categories are getting determined
+    if (hideEmptyCategories && !areVisibleCountsKnown) {
         return (
             <>
+                {visibleCountReporters}
+                <LoadingPlaceholder />
+            </>
+        );
+    }
+
+    if (tabs.length === 1) {
+        return (
+            <Box ref={gestureRef}>
+                {visibleCountReporters}
+                <PullToRefreshIndicator pullDistance={pullDistance} />
                 {triggerGlobalSearchButton}
                 <LibraryMangaGrid
                     // the key needs to include filters and query to force a re-render of the virtuoso grid to prevent https://github.com/petyosi/react-virtuoso/issues/1242
@@ -296,12 +374,18 @@ export function Library() {
                     retry={mangaError && retryFetchCategoryMangas}
                 />
                 {selectionFab}
-            </>
+            </Box>
         );
     }
 
     return (
-        <TabsWrapper>
+        <TabsWrapper ref={gestureRef} sx={{ overflowX: 'clip' }}>
+            {visibleCountReporters}
+            {previousTab && (
+                <LibraryCategoryPreview key={previousTab.id} ref={previousPreviewRef} category={previousTab} />
+            )}
+            {nextTab && <LibraryCategoryPreview key={nextTab.id} ref={nextPreviewRef} category={nextTab} />}
+            <PullToRefreshIndicator pullDistance={pullDistance} />
             <OffsetComponent>
                 <TabsMenu value={activeTab.id} onChange={(e, newTab) => handleTabChange(newTab)}>
                     {tabs.map((tab) => (
@@ -320,25 +404,27 @@ export function Library() {
                 </TabsMenu>
             </OffsetComponent>
             {triggerGlobalSearchButton}
-            {tabs.map((tab) => (
-                <TabPanel key={tab.id} index={tab.order} currentIndex={activeTab.order}>
-                    {tab === activeTab && (
-                        <LibraryMangaGrid
-                            // the key needs to include filters and query to force a re-render of the virtuoso grid to prevent https://github.com/petyosi/react-virtuoso/issues/1242
-                            key={filterKey}
-                            mangas={mangas}
-                            message={mangaError ? t`Could not load manga` : t`The category is empty`}
-                            messageExtra={mangaError?.message}
-                            isLoading={mangaLoading}
-                            selectedMangaIds={selectedItemIds}
-                            isSelectModeActive={isSelectModeActive}
-                            handleSelection={handleSelect}
-                            showFilteredOutMessage={!mangaError && showFilteredOutMessage}
-                            retry={mangaError && retryFetchCategoryMangas}
-                        />
-                    )}
-                </TabPanel>
-            ))}
+            <Box ref={panelRef}>
+                {tabs.map((tab) => (
+                    <TabPanel key={tab.id} index={tab.order} currentIndex={activeTab.order}>
+                        {tab === activeTab && (
+                            <LibraryMangaGrid
+                                // the key needs to include filters and query to force a re-render of the virtuoso grid to prevent https://github.com/petyosi/react-virtuoso/issues/1242
+                                key={filterKey}
+                                mangas={mangas}
+                                message={mangaError ? t`Could not load manga` : t`The category is empty`}
+                                messageExtra={mangaError?.message}
+                                isLoading={mangaLoading}
+                                selectedMangaIds={selectedItemIds}
+                                isSelectModeActive={isSelectModeActive}
+                                handleSelection={handleSelect}
+                                showFilteredOutMessage={!mangaError && showFilteredOutMessage}
+                                retry={mangaError && retryFetchCategoryMangas}
+                            />
+                        )}
+                    </TabPanel>
+                ))}
+            </Box>
             {selectionFab}
         </TabsWrapper>
     );

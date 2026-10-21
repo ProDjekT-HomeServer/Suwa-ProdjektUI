@@ -8,4 +8,10 @@
 
 export type MetadataHistorySettings = {
     hideHistory: boolean;
+    /**
+     * Epoch seconds; chapters read at or before this point are hidden from the history.
+     * The server does not support resetting "lastReadAt", thus, clearing the history is done client side.
+     */
+    historyClearedAt: number;
+    incognitoSourceIds: string[];
 };

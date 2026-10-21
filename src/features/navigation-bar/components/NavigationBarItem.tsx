@@ -13,7 +13,7 @@ import { TypographyMaxLines } from '@/base/components/texts/TypographyMaxLines.t
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { useLocation } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import type { ComponentProps } from 'react';
 import { useMemo } from 'react';
 import ListItem from '@mui/material/ListItem';
@@ -46,13 +46,31 @@ export const NavigationBarItem = ({
 
     const isActive = location.pathname.startsWith(path);
     const Icon = isActive ? SelectedIconComponent : IconComponent;
+    // on the glass bottom bar, the selection is shown by a pill, the tint color might not have enough contrast
+    const activeColorLight = isCollapsed ? 'text.primary' : 'primary.dark';
+    const activeColorDark = isCollapsed ? 'text.primary' : 'primary.light';
 
     const { listItemProps, listItemIconProps } = useMemo(
         () => ({
-            listItemProps: isCollapsed ? { p: 0.5, display: 'flex', flexDirection: 'column' } : {},
+            listItemProps: isCollapsed
+                ? {
+                      p: 0.5,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      borderRadius: 9999,
+                      transition: 'background-color 200ms ease-out',
+                      // selection is shown as a thin fill on the glass instead of another glass layer
+                      ...(isActive && {
+                          backgroundColor: alpha(
+                              theme.palette.text.primary,
+                              theme.palette.mode === 'dark' ? 0.14 : 0.08,
+                          ),
+                      }),
+                  }
+                : {},
             listItemIconProps: isCollapsed ? { justifyContent: 'center' } : {},
         }),
-        [isCollapsed],
+        [isCollapsed, isActive, theme],
     );
 
     return (
@@ -77,9 +95,9 @@ export const NavigationBarItem = ({
                         <Badge badgeContent={badgeInfo?.count} color="primary">
                             <Icon
                                 sx={{
-                                    color: isActive ? 'primary.dark' : undefined,
+                                    color: isActive ? activeColorLight : undefined,
                                     ...theme.applyStyles('dark', {
-                                        color: isActive ? 'primary.light' : undefined,
+                                        color: isActive ? activeColorDark : undefined,
                                     }),
                                 }}
                             />
@@ -92,9 +110,9 @@ export const NavigationBarItem = ({
                                 lines={1}
                                 variant={isCollapsed ? 'caption' : undefined}
                                 sx={{
-                                    color: isActive ? 'primary.dark' : undefined,
+                                    color: isActive ? activeColorLight : undefined,
                                     ...theme.applyStyles('dark', {
-                                        color: isActive ? 'primary.light' : undefined,
+                                        color: isActive ? activeColorDark : undefined,
                                     }),
                                 }}
                             >

@@ -6,6 +6,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+import Chip from '@mui/material/Chip';
+import { liquidGlass } from '@/features/theme/LiquidGlass.ts';
+import isEqual from 'lodash/fp/isEqual';
 import type { MessageDescriptor } from '@lingui/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -66,13 +69,40 @@ const DEFAULT_SOURCE: SourceIdInfo = { id: '-1' };
 
 const ContentTypeMenu = styled('div')(({ theme }) => ({
     display: 'flex',
+    alignItems: 'center',
     width: '100%',
     padding: theme.spacing(1),
     gap: theme.spacing(1),
-    backgroundColor: theme.palette.background.default,
+    // the row floats above the content, thus, its controls are glass capsules instead of having a solid background
+    // the saved searches can exceed the available width, thus, the row has to be horizontally scrollable
+    overflowX: 'auto',
+    overscrollBehaviorX: 'contain',
+    scrollbarWidth: 'none',
+    '&::-webkit-scrollbar': {
+        display: 'none',
+    },
 }));
 
-const ContentTypeButton = styled(Button)(() => ({}));
+const ContentTypeButton = styled(Button)(({ theme }) => ({
+    ...liquidGlass(theme, { interactive: true }),
+    flexShrink: 0,
+    color: theme.palette.text.primary,
+    paddingInline: theme.spacing(2),
+    '&.MuiButton-contained': {
+        ...liquidGlass(theme, { interactive: true, tint: theme.palette.primary.main }),
+        color: theme.palette.primary.contrastText,
+    },
+}));
+
+const SavedSearchChip = styled(Chip)(({ theme }) => ({
+    ...liquidGlass(theme, { interactive: true }),
+    flexShrink: 0,
+    height: 36,
+    '&.MuiChip-colorPrimary': {
+        ...liquidGlass(theme, { interactive: true, tint: theme.palette.primary.main }),
+        color: theme.palette.primary.contrastText,
+    },
+}));
 
 const StyledGridWrapper = styled(Box)(() => ({
     minHeight: '100%',
@@ -324,10 +354,26 @@ export function SourceMangas() {
             if (savedSearchQuery) {
                 searchParams.set(SearchParam.QUERY, savedSearchQuery);
                 setSearchParams(searchParams);
+            } else if (query) {
+                // otherwise, the previous search would still be applied in addition to the saved search
+                searchParams.delete(SearchParam.QUERY);
+                setSearchParams(searchParams);
             }
+
+            setContentType(SourceContentType.SEARCH);
         },
-        [savedSearches, locationState],
+        [savedSearches, locationState, query],
     );
+
+    const isSavedSearchActive = (savedSearch: string): boolean => {
+        const { query: savedSearchQuery, filters: savedSearchFilters } = savedSearches[savedSearch];
+
+        return (
+            contentType === SourceContentType.SEARCH &&
+            (savedSearchQuery ?? '') === (query ?? '') &&
+            isEqual(savedSearchFilters ?? [], filtersToApply)
+        );
+    };
 
     const handleSavedSearchesUpdate = useCallback(
         (savedSearch: string, updateType: 'create' | 'delete') => {
@@ -485,6 +531,22 @@ export function SourceMangas() {
                     >
                         {t`Filter`}
                     </ContentTypeButton>
+                    {Object.keys(savedSearches).map((savedSearch) => {
+                        const isActive = isSavedSearchActive(savedSearch);
+
+                        return (
+                            <SavedSearchChip
+                                key={savedSearch}
+                                label={savedSearch}
+                                variant="filled"
+                                color={isActive ? 'primary' : 'default'}
+                                onClick={() => {
+                                    selectSavedSearch(savedSearch);
+                                    scrollToTop();
+                                }}
+                            />
+                        );
+                    })}
                 </ContentTypeMenu>
             </OffsetComponent>
             {(isLoading || !error || (!!error && !!mangas.length)) && (

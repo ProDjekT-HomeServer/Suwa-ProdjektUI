@@ -178,7 +178,14 @@ export const LibraryOptionsPanel = ({
     );
 
     const {
-        settings: { showTabSize, showContinueReadingButton, showDownloadBadge, showUnreadBadge, gridLayout },
+        settings: {
+            showTabSize,
+            hideEmptyCategories,
+            showContinueReadingButton,
+            showDownloadBadge,
+            showUnreadBadge,
+            gridLayout,
+        },
     } = useMetadataServerSettings();
     const setSettingValue = createUpdateMetadataServerSettings((e) =>
         makeToast(t`Could not save the default search settings to the server`, 'error', getErrorMessage(e)),
@@ -373,6 +380,11 @@ export const LibraryOptionsPanel = ({
                                 label={t`Show number of items`}
                                 checked={showTabSize}
                                 onChange={() => setSettingValue('showTabSize', !showTabSize)}
+                            />
+                            <CheckboxInput
+                                label={t`Hide categories without visible entries`}
+                                checked={hideEmptyCategories}
+                                onChange={() => setSettingValue('hideEmptyCategories', !hideEmptyCategories)}
                             />
                             <FormLabel sx={{ mt: 2 }}>{t`Other`}</FormLabel>
                             <CheckboxInput

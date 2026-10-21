@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+import { liquidGlass } from '@/features/theme/LiquidGlass.ts';
 import type { MessageDescriptor } from '@lingui/core';
 import type { CustomContentProps, VariantType } from 'notistack';
 import { closeSnackbar, SnackbarContent } from 'notistack';
@@ -67,6 +68,9 @@ export const SnackbarWithDescription = memo(
                     severity={severity}
                     action={finalAction}
                     sx={{
+                        ...liquidGlass(theme, { elevated: true }),
+                        color: 'text.primary',
+                        borderRadius: '20px',
                         wordBreak: 'break-word',
                         minWidth: '300px',
                         [theme.breakpoints.down(MediaQuery.MOBILE_WIDTH)]: {

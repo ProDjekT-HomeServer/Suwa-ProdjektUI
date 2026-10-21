@@ -210,12 +210,27 @@ export class ReaderService {
 
     static useUpdateChapter(): (patch: UpdateChapterPatchInput) => void {
         const {
-            settings: { deleteChaptersWhileReading, deleteChaptersWithBookmark, updateProgressAfterReading },
+            settings: {
+                deleteChaptersWhileReading,
+                deleteChaptersWithBookmark,
+                updateProgressAfterReading,
+                incognitoSourceIds,
+            },
         } = useMetadataServerSettings();
 
         return useCallback(
-            (patch) => {
+            (passedPatch) => {
                 const { manga } = getReaderStore();
+                const isIncognito = !!manga && incognitoSourceIds.includes(manga.sourceId);
+                // incognito: neither the reading progress nor the history is allowed to get updated
+                const patch: UpdateChapterPatchInput = isIncognito
+                    ? { isBookmarked: passedPatch.isBookmarked }
+                    : passedPatch;
+
+                if (isIncognito && patch.isBookmarked === undefined) {
+                    return;
+                }
+
                 const { currentChapter, mangaChapters, chapters } = getReaderChaptersStore();
                 const { shouldSkipDupChapters } = getReaderSettingsStore();
 
@@ -282,7 +297,7 @@ export class ReaderService {
 
                 ReaderService.getOrCreateChapterUpdateQueue(currentChapter.id).enqueue(`${currentChapter.id}`, update);
             },
-            [deleteChaptersWhileReading, deleteChaptersWithBookmark, updateProgressAfterReading],
+            [deleteChaptersWhileReading, deleteChaptersWithBookmark, updateProgressAfterReading, incognitoSourceIds],
         );
     }
 

@@ -8,6 +8,7 @@
 
 import { useLayoutEffect } from 'react';
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
+import { useIsTabPreview } from '@/base/components/tabs/TabPreview.tsx';
 import type { NavbarContextType } from '@/features/navigation-bar/NavigationBar.types.ts';
 
 export function useAppTitle(
@@ -22,8 +23,14 @@ export function useAppTitle(
     dependencies: any[] = [title, browserTitleOrDependencies],
 ): void {
     const { setTitle } = useNavBarContext();
+    // previews of adjacent tabs must not replace the app bar of the visible tab
+    const isTabPreview = useIsTabPreview();
 
     useLayoutEffect(() => {
+        if (isTabPreview) {
+            return () => {};
+        }
+
         if (typeof browserTitleOrDependencies === 'string') {
             setTitle(title, browserTitleOrDependencies);
         } else {

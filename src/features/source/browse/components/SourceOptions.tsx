@@ -242,7 +242,7 @@ export function SourceOptions({
                     {savedSearchesExist && (
                         <>
                             <Typography sx={{ pb: 1 }}>Saved searches</Typography>
-                            <Stack sx={{ flexDirection: 'row' }}>
+                            <Stack sx={{ flexDirection: 'row', flexWrap: 'wrap', gap: 1 }}>
                                 {savedSearchNames.map((savedSearch) => (
                                     <Chip
                                         key={savedSearch}
