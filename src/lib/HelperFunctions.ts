@@ -100,9 +100,41 @@ export const maybeExecuteWithDelay = (
     return undefined;
 };
 
+/**
+ * The clipboard api is only available in secure contexts (https, localhost), thus, it is missing when accessing the
+ * server via http and its ip address.
+ * The deprecated "copy" command still works there, as long as it gets executed during a user activation.
+ */
+const copyViaCommand = (text: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.readOnly = true;
+    // prevents scrolling to the element and zooming into it on iOS
+    textArea.style.cssText = 'position: fixed; top: 0; left: 0; opacity: 0; font-size: 16px;';
+    document.body.appendChild(textArea);
+
+    try {
+        textArea.select();
+        // iOS ignores "select()"
+        textArea.setSelectionRange(0, text.length);
+
+        if (!document.execCommand('copy')) {
+            throw new Error('The "copy" command is not supported');
+        }
+    } finally {
+        textArea.remove();
+    }
+};
+
+export const isClipboardSupported = (): boolean => !!navigator.clipboard || !!document.queryCommandSupported?.('copy');
+
 export const copyToClipboard = async (text: string) => {
     try {
-        await navigator.clipboard.writeText(text);
+        if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            copyViaCommand(text);
+        }
         makeToast(t`Copied to clipboard`, 'info');
     } catch (e) {
         makeToast(t`Could not copy to clipboard`, 'error', getErrorMessage(e));

@@ -40,6 +40,11 @@ type GlassOptions = {
     elevated?: boolean;
     /** adds the press feedback (scale + illumination) */
     interactive?: boolean;
+    /**
+     * the more transparent "clear" variant for controls floating above media (e.g. the reader), which should stay
+     * visible through the glass
+     */
+    clear?: boolean;
 };
 
 const getBackdropFilter = () => `blur(${GLASS_BLUR}px) saturate(${GLASS_SATURATION}%)`;
@@ -56,9 +61,14 @@ const getShadows = (isDark: boolean, elevated: boolean) => {
     return `${specular}, ${rim}, ${drop}`;
 };
 
-const getBackgroundColor = (isDark: boolean, elevated: boolean, tint?: string) => {
+const getBackgroundColor = (isDark: boolean, elevated: boolean, tint?: string, clear?: boolean) => {
     if (tint) {
         return alpha(tint, isDark ? 0.55 : 0.7);
+    }
+
+    // the clear variant relies on the blur to keep its content legible
+    if (clear) {
+        return isDark ? 'rgba(24, 24, 28, 0.5)' : 'rgba(255, 255, 255, 0.4)';
     }
 
     // large surfaces contain a lot of text, thus, they need to be more opaque to stay legible
@@ -69,16 +79,19 @@ const getBackgroundColor = (isDark: boolean, elevated: boolean, tint?: string) =
     return isDark ? 'rgba(40, 40, 44, 0.48)' : 'rgba(255, 255, 255, 0.55)';
 };
 
-export const liquidGlass = (theme: Theme, { tint, elevated = false, interactive = false }: GlassOptions = {}) =>
+export const liquidGlass = (
+    theme: Theme,
+    { tint, elevated = false, interactive = false, clear = false }: GlassOptions = {},
+) =>
     ({
-        backgroundColor: getBackgroundColor(false, elevated, tint),
+        backgroundColor: getBackgroundColor(false, elevated, tint, clear),
         backgroundImage: 'none',
         backdropFilter: getBackdropFilter(),
         WebkitBackdropFilter: getBackdropFilter(),
         boxShadow: getShadows(false, elevated),
         border: 'none',
         ...(theme.applyStyles('dark', {
-            backgroundColor: getBackgroundColor(true, elevated, tint),
+            backgroundColor: getBackgroundColor(true, elevated, tint, clear),
             boxShadow: getShadows(true, elevated),
         }) as CSSObject),
         ...(interactive && {

@@ -30,7 +30,7 @@ import { TypographyMaxLines } from '@/base/components/texts/TypographyMaxLines.t
 import { indent } from '@/base/utils/Strings.ts';
 import Button from '@mui/material/Button';
 import { assertIsDefined } from '@/base/Asserts.ts';
-import { copyToClipboard, getRenderedText } from '@/lib/HelperFunctions.ts';
+import { copyToClipboard, getRenderedText, isClipboardSupported } from '@/lib/HelperFunctions.ts';
 import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholder.tsx';
 import { EmptyView } from '@/base/components/feedback/EmptyView.tsx';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
@@ -529,7 +529,7 @@ export const DebugInformation = () => {
             header={
                 <Stack sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                     {t`Show`}
-                    {!!navigator.clipboard && (
+                    {isClipboardSupported() && (
                         <Button
                             variant="text"
                             size="small"
