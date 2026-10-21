@@ -13,7 +13,9 @@ It is based on the upstream release `v20260929.01` (r3518), matching the server'
 Additions:
 
 - Library: tab counts and hidden empty categories follow the active filters, carousel swiping between categories, pull to refresh updates the whole library
-- Manga: pull to refresh fetches the manga and its chapters from the source
+- Manga: pull to refresh fetches the manga and its chapters from the source; tapping the title or an author searches all sources, long pressing copies it
+- Navigation: swiping to the right goes back on every page with a back button (installed iOS web apps have no edge swipe)
+- Reader: double tap zooms in on the tapped point and back out; no reading mode toast when opening a chapter; the scanlator change warning is off by default
 - Browse: carousel swiping between Source / Extension / Migrate
 - History: clear the whole history (client side, the server can't reset `lastReadAt`)
 - Sources: incognito mode per source (no reading progress / history)

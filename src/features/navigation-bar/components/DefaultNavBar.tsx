@@ -12,7 +12,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import ArrowBack from '@mui/icons-material/ArrowBack';
-import { useLocation } from 'react-router-dom';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import MenuIcon from '@mui/icons-material/Menu';
 import Stack from '@mui/material/Stack';
@@ -27,6 +26,7 @@ import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
 import { NAVIGATION_BAR_ITEMS } from '@/features/navigation-bar/NavigationBar.constants.ts';
 import { NavigationBarUtil } from '@/features/navigation-bar/NavigationBar.util.ts';
+import { useIsMainRoute } from '@/features/navigation-bar/hooks/useIsMainRoute.ts';
 import { CAPSULE_RADIUS, liquidGlass, scrollEdgeEffect } from '@/features/theme/LiquidGlass.ts';
 
 export function DefaultNavBar() {
@@ -44,7 +44,6 @@ export function DefaultNavBar() {
 
     const theme = useTheme();
     const getOptionForDirection = useGetOptionForDirection();
-    const { pathname } = useLocation();
     const handleBack = useBackButton();
     const isMobileWidth = MediaQuery.useIsMobileWidth();
 
@@ -54,17 +53,7 @@ export function DefaultNavBar() {
 
     const appBarRef = useRef<HTMLDivElement | null>(null);
 
-    const isMainRoute = NAVIGATION_BAR_ITEMS.some(({ path, show }) => {
-        if (isMobileWidth && show === 'desktop') {
-            return false;
-        }
-
-        if (!isMobileWidth && show === 'mobile') {
-            return false;
-        }
-
-        return path === pathname;
-    });
+    const isMainRoute = useIsMainRoute();
     const actualNavBarWidth = isMobileWidth || isCollapsed ? 0 : navBarWidth;
 
     const visibleNavBarItems = useMemo(

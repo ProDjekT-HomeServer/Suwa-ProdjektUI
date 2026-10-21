@@ -48,7 +48,6 @@ import type {
 import { applyStyles } from '@/base/utils/ApplyStyles.ts';
 import { CustomIconButton } from '@/base/components/buttons/CustomIconButton.tsx';
 import { Sources } from '@/features/source/services/Sources.ts';
-import type { SourceIdInfo } from '@/features/source/Source.types.ts';
 import { Thumbnail } from '@/features/manga/components/details/Thumbnail.tsx';
 import { DescriptionGenre } from '@/features/manga/components/details/DescriptionGenre.tsx';
 import { SearchLink } from '@/features/manga/components/details/SearchLink.tsx';
@@ -195,13 +194,10 @@ function getSourceName(source?: Pick<SourceType, 'id' | 'displayName'> | null): 
     return source.displayName ?? source.id;
 }
 
-const valuesToJoinedSearchLinks = (
-    values: string[] | undefined,
-    sourceId: SourceIdInfo['id'] | undefined,
-    mode: MangaLocationState['mode'],
-) =>
+// authors and artists get searched in all sources
+const valuesToJoinedSearchLinks = (values: string[] | undefined) =>
     values
-        ?.map((value) => <SearchLink key={value} query={value} sourceId={sourceId} mode={mode} />)
+        ?.map((value) => <SearchLink key={value} query={value} sourceId={undefined} mode="source.global-search" />)
         .reduce((acc, valueLink) => (
             <>
                 {acc}, {valueLink}
@@ -264,16 +260,10 @@ export const MangaDetails = ({
                             </ClipBoardGuard>
                         </Stack>
                         {manga.author && (
-                            <Metadata
-                                title={t`Author`}
-                                value={valuesToJoinedSearchLinks(Mangas.getAuthors(manga), manga.source?.id, mode)}
-                            />
+                            <Metadata title={t`Author`} value={valuesToJoinedSearchLinks(Mangas.getAuthors(manga))} />
                         )}
                         {manga.artist && (
-                            <Metadata
-                                title={t`Artist`}
-                                value={valuesToJoinedSearchLinks(Mangas.getArtists(manga), manga.source?.id, mode)}
-                            />
+                            <Metadata title={t`Artist`} value={valuesToJoinedSearchLinks(Mangas.getArtists(manga))} />
                         )}
                         <Metadata title={t`Status`} value={t(MANGA_STATUS_TO_TRANSLATION[manga.status])} />
                         <Metadata title={t`Source`} value={getSourceName(manga.source)} />

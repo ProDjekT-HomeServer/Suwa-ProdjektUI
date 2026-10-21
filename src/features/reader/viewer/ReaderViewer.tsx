@@ -31,6 +31,7 @@ import { useReaderHorizontalModeRevampScrolling } from '@/features/reader/viewer
 import { useReaderHideCursorOnInactivity } from '@/features/reader/viewer/hooks/useReaderHideCursorOnInactivity.ts';
 import { useReaderScrollToStartOnPageChange } from '@/features/reader/viewer/hooks/useReaderScrollToStartOnPageChange.ts';
 import { useReaderHandlePageSelection } from '@/features/reader/viewer/hooks/useReaderHandlePageSelection.ts';
+import { useReaderDoubleTapZoom } from '@/features/reader/viewer/hooks/useReaderDoubleTapZoom.ts';
 import { ReaderChapterViewer } from '@/features/reader/viewer/ReaderChapterViewer.tsx';
 import {
     getPreviousNextChapterVisibility,
@@ -124,6 +125,12 @@ const BaseReaderViewer = ({
     const isDragging = useMouseDragScroll(scrollElementRef);
 
     useEffect(() => getReaderAutoScrollStore().setScrollRef(scrollElementRef.current), []);
+
+    // paged reading modes reset the zoom when turning the page
+    const { zoom, isZoomed, handleTap } = useReaderDoubleTapZoom(
+        scrollElementRef,
+        `${readingMode}-${isContinuousReadingModeActive ? '' : currentPageIndex}`,
+    );
 
     const scrollbarXSize = MediaQuery.useGetScrollbarSize('X', scrollElementRef.current);
     const scrollbarYSize = MediaQuery.useGetScrollbarSize('Y', scrollElementRef.current);
@@ -256,6 +263,8 @@ const BaseReaderViewer = ({
                 height: '100%',
                 overflow: 'auto',
                 flexWrap: 'nowrap',
+                // the double tap zoom is handled by the reader
+                touchAction: 'manipulation',
                 ...applyStyles(isContinuousReadingModeActive && !shouldShowTransitionPage, {
                     gap: `${getPageGap(pageGap, readingMode)}px`,
                 }),
@@ -263,6 +272,11 @@ const BaseReaderViewer = ({
                     isContinuousVerticalReadingModeActive && shouldApplyReaderWidth(readerWidth, pageScaleMode),
                     { alignItems: 'center' },
                 ),
+                ...applyStyles(isZoomed, {
+                    // centering would move the overflowing start of the pages out of the scrollable area
+                    alignItems: 'flex-start',
+                    '& > *': { zoom },
+                }),
                 ...applyStyles(!isContinuousVerticalReadingModeActive, {
                     ...applyStyles(themeDirection === 'ltr', {
                         flexDirection: isLtrReadingDirection ? 'row' : 'row-reverse',
@@ -272,7 +286,9 @@ const BaseReaderViewer = ({
                     }),
                 }),
             }}
-            onClick={(e) => !isDragging && ReaderControls.handleClick(scrollElementRef.current, e)}
+            onClick={(e) =>
+                !isDragging && handleTap(e, (x, y) => ReaderControls.handleClick(scrollElementRef.current, x, y))
+            }
             onScroll={() =>
                 ReaderControls.updateCurrentPageOnScroll(
                     imageRefs,

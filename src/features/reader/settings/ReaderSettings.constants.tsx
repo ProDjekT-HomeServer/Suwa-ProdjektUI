@@ -243,7 +243,8 @@ export const DEFAULT_READER_SETTINGS: IReaderSettings = {
     shouldShowReadingModePreview: true,
     shouldShowTapZoneLayoutPreview: true,
     shouldInformAboutMissingChapter: true,
-    shouldInformAboutScanlatorChange: true,
+    // mixing official and fan translations is common, thus, the warning is more annoying than helpful
+    shouldInformAboutScanlatorChange: false,
     shouldWakeLockScreen: true,
     scrollAmount: ReaderScrollAmount.LARGE,
     shouldUseInfiniteScroll: true,
