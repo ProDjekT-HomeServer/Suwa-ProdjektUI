@@ -1,0 +1,29 @@
+# Tags the release branch with the fork version (package.json `version`).
+# Release = bump that version in a branch and merge it into `release`; the tag (e.g. 1.0.0)
+# lands on the merged commit. An existing tag is never moved.
+name: Tag release
+
+on:
+  push:
+    branches: [release]
+    paths: [package.json]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag the fork version
+        run: |
+          version=$(jq -r .version package.json)
+          if git ls-remote --exit-code --tags origin "refs/tags/$version" >/dev/null; then
+            echo "Tag $version already exists, nothing to do."
+            exit 0
+          fi
+          git tag "$version"
+          git push origin "$version"
+          echo "Tagged $GITHUB_SHA as $version."

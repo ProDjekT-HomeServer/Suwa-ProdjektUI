@@ -5,6 +5,35 @@ This is the repository of the default client of [Suwayomi-Server](https://github
 The server has this web app bundled by default and is able to automatically update to the latest versions.
 Thus, there is no need to manually download any builds unless you want to host the app yourself instead of having it hosted by the Suwayomi-Server.
 
+## ProDjekT fork
+
+This fork (branch `release`) is the WebUI of a self-hosted Suwayomi-Server, mainly used as an iPhone PWA.
+It is based on the upstream release `v20260929.01` (r3518), matching the server's stable version.
+
+Additions:
+
+- Library: tab counts and hidden empty categories follow the active filters, carousel swiping between categories, pull to refresh updates the whole library
+- Browse: carousel swiping between Source / Extension / Migrate
+- History: clear the whole history (client side, the server can't reset `lastReadAt`)
+- Sources: incognito mode per source (no reading progress / history)
+- Source browse: saved searches as a scrollable row next to "Filter"
+- Liquid Glass inspired UI (floating glass tab bar, transparent app bar with scroll edge effect, glass sheets/menus)
+
+### Releases
+
+The fork version is `version` in `package.json`. To release, bump it in a `release-X.Y.Z` branch and merge it into
+`release`: the `Tag release` GitHub Action tags the merged commit with that version (e.g. `1.0.0`). Existing tags are
+not moved. `master` mirrors upstream and is only used to pull in upstream changes.
+
+### Deploying
+
+The server runs with `webUIFlavor = CUSTOM` and serves the build from its `webUI` data directory:
+
+```sh
+pnpm exec vite build && echo r3518 > build/revision
+# copy build/ into <server data>/webUI and restart the server, it caches index.html
+```
+
 ## Features
 
 - Library management

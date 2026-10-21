@@ -8,15 +8,50 @@
 
 import type { TabsProps } from '@mui/material/Tabs';
 import Tabs from '@mui/material/Tabs';
-import { styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
+import { CAPSULE_RADIUS, liquidGlass } from '@/features/theme/LiquidGlass.ts';
+
+const TAB_HEIGHT = 40;
+const TABS_PADDING = 4;
 
 const StyledTabsMenu = styled(Tabs)(({ theme }) => ({
+    ...liquidGlass(theme),
     display: 'flex',
-    backgroundColor: theme.palette.background.default,
-    border: 0,
-    borderBottomWidth: 2,
-    borderStyle: 'solid',
-    borderColor: theme.palette.divider,
+    alignItems: 'center',
+    minHeight: TAB_HEIGHT + TABS_PADDING * 2,
+    margin: theme.spacing(0.5, 1.5),
+    padding: TABS_PADDING,
+    borderRadius: CAPSULE_RADIUS,
+    '& .MuiTabs-scroller': {
+        borderRadius: CAPSULE_RADIUS,
+    },
+    // the indicator becomes a pill behind the selected tab (concentric to the capsule)
+    '& .MuiTabs-indicator': {
+        top: 0,
+        bottom: 'auto',
+        height: '100%',
+        borderRadius: CAPSULE_RADIUS,
+        backgroundColor: alpha(theme.palette.text.primary, 0.1),
+        ...theme.applyStyles('dark', {
+            backgroundColor: alpha(theme.palette.text.primary, 0.14),
+        }),
+    },
+    '& .MuiTab-root': {
+        zIndex: 1,
+        minHeight: TAB_HEIGHT,
+        paddingBlock: 0,
+        borderRadius: CAPSULE_RADIUS,
+        textTransform: 'none',
+        fontWeight: 600,
+        // the selection is shown by the pill, the tint color might not have enough contrast on the glass
+        '&.Mui-selected': {
+            color: theme.palette.text.primary,
+        },
+    },
+    '& .MuiTabs-scrollButtons': {
+        borderRadius: CAPSULE_RADIUS,
+        minHeight: TAB_HEIGHT,
+    },
 }));
 
 export const TabsMenu = ({ children, ...props }: TabsProps) => (

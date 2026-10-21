@@ -21,6 +21,15 @@ import { SearchParam } from '@/base/Base.types.ts';
 import { Migration } from '@/features/migration/screens/Migration.tsx';
 import { OffsetComponentWithContainer } from '@/base/OffsetComponent.tsx';
 import { useElementSize } from '@mantine/hooks';
+import Box from '@mui/material/Box';
+import type { ReactNode } from 'react';
+import { TabPreview } from '@/base/components/tabs/TabPreview.tsx';
+import { useTabSwipe } from '@/base/hooks/useTabSwipe.ts';
+import { useTouchGestures } from '@/base/hooks/useTouchGestures.ts';
+import { MigrationSelectSource } from '@/features/migration/screens/MigrationSelectSource.tsx';
+
+const SWIPEABLE_TABS = [BrowseTab.SOURCES, BrowseTab.EXTENSIONS, BrowseTab.MIGRATE] as const;
+type SwipeableTab = (typeof SWIPEABLE_TABS)[number];
 
 export function Browse() {
     const { t } = useLingui();
@@ -35,8 +44,38 @@ export function Browse() {
         setTabSearchParam(tabName, 'replaceIn');
     }
 
+    const swipeableTabName = tabName === BrowseTab.SOURCE_DEPRECATED ? BrowseTab.SOURCES : tabName;
+    const activeTabIndex = SWIPEABLE_TABS.indexOf(swipeableTabName as SwipeableTab);
+    const previousTab = activeTabIndex > 0 ? SWIPEABLE_TABS[activeTabIndex - 1] : undefined;
+    const nextTab = activeTabIndex >= 0 ? SWIPEABLE_TABS[activeTabIndex + 1] : undefined;
+
+    const { panelRef, previousPreviewRef, nextPreviewRef, gestureHandlers } = useTabSwipe({
+        activeTabId: tabName,
+        previousTabId: previousTab,
+        nextTabId: nextTab,
+        onTabChange: (newTab) => setTabSearchParam(newTab, 'replaceIn'),
+    });
+    const { ref: gestureRef } = useTouchGestures({
+        ...gestureHandlers,
+        ignoreSelector: '[role="tablist"]',
+    });
+
+    const renderPreview = (tab: SwipeableTab): ReactNode => {
+        switch (tab) {
+            case BrowseTab.SOURCES:
+                return <Sources tabsMenuHeight={tabsMenuHeight} />;
+            case BrowseTab.EXTENSIONS:
+                return <Extensions tabsMenuHeight={tabsMenuHeight} />;
+            case BrowseTab.MIGRATE:
+                // the migration screen has global side effects (e.g. navigation), only its first step is safe to preview
+                return <MigrationSelectSource />;
+            default:
+                return null;
+        }
+    };
+
     return (
-        <TabsWrapper>
+        <TabsWrapper ref={gestureRef} sx={{ overflowX: 'clip' }}>
             <OffsetComponentWithContainer
                 sx={{ zIndex: 2 }}
                 component={
@@ -53,18 +92,30 @@ export function Browse() {
                     </TabsMenu>
                 }
             >
-                <TabPanel index={BrowseTab.SOURCE_DEPRECATED} currentIndex={tabName}>
-                    <Sources tabsMenuHeight={tabsMenuHeight} />
-                </TabPanel>
-                <TabPanel index={BrowseTab.SOURCES} currentIndex={tabName}>
-                    <Sources tabsMenuHeight={tabsMenuHeight} />
-                </TabPanel>
-                <TabPanel index={BrowseTab.EXTENSIONS} currentIndex={tabName}>
-                    <Extensions tabsMenuHeight={tabsMenuHeight} />
-                </TabPanel>
-                <TabPanel index={BrowseTab.MIGRATE} currentIndex={tabName}>
-                    <Migration />
-                </TabPanel>
+                {previousTab && (
+                    <TabPreview key={previousTab} ref={previousPreviewRef}>
+                        {renderPreview(previousTab)}
+                    </TabPreview>
+                )}
+                {nextTab && (
+                    <TabPreview key={nextTab} ref={nextPreviewRef}>
+                        {renderPreview(nextTab)}
+                    </TabPreview>
+                )}
+                <Box ref={panelRef}>
+                    <TabPanel index={BrowseTab.SOURCE_DEPRECATED} currentIndex={tabName}>
+                        <Sources tabsMenuHeight={tabsMenuHeight} />
+                    </TabPanel>
+                    <TabPanel index={BrowseTab.SOURCES} currentIndex={tabName}>
+                        <Sources tabsMenuHeight={tabsMenuHeight} />
+                    </TabPanel>
+                    <TabPanel index={BrowseTab.EXTENSIONS} currentIndex={tabName}>
+                        <Extensions tabsMenuHeight={tabsMenuHeight} />
+                    </TabPanel>
+                    <TabPanel index={BrowseTab.MIGRATE} currentIndex={tabName}>
+                        <Migration />
+                    </TabPanel>
+                </Box>
             </OffsetComponentWithContainer>
         </TabsWrapper>
     );

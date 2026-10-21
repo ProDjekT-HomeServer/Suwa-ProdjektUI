@@ -26,6 +26,16 @@ import uniqBy from 'lodash/fp/uniqBy';
 import mapValues from 'lodash/fp/mapValues';
 import { epochToDate, getDateString } from '@/base/utils/DateHelper.ts';
 import difference from 'lodash/fp/difference';
+import IconButton from '@mui/material/IconButton';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import { useAppAction } from '@/features/navigation-bar/hooks/useAppAction.ts';
+import { CustomTooltip } from '@/base/components/CustomTooltip.tsx';
+import { Confirmation } from '@/base/AppAwaitableComponent.ts';
+import {
+    updateMetadataServerSettings,
+    useMetadataServerSettings,
+} from '@/features/settings/services/ServerSettingsMetadata.ts';
+import { makeToast } from '@/base/utils/Toast.ts';
 
 export const History: React.FC = () => {
     const { t } = useLingui();
@@ -33,14 +43,51 @@ export const History: React.FC = () => {
     useAppTitle(t`History`);
 
     const {
+        settings: { historyClearedAt },
+        loading: areSettingsLoading,
+    } = useMetadataServerSettings();
+
+    const clearHistory = async () => {
+        try {
+            await Confirmation.show({
+                title: t`Clear history`,
+                message: t`All entries will be removed from the history. Reading progress is kept.`,
+                actions: { confirm: { title: t`Clear` } },
+            });
+        } catch {
+            return;
+        }
+
+        try {
+            await updateMetadataServerSettings('historyClearedAt', Math.floor(Date.now() / 1000));
+        } catch (e) {
+            makeToast(t`Failed to save changes`, 'error', getErrorMessage(e));
+        }
+    };
+
+    useAppAction(
+        <CustomTooltip title={t`Clear history`}>
+            <IconButton color="inherit" onClick={clearHistory}>
+                <DeleteSweepIcon />
+            </IconButton>
+        </CustomTooltip>,
+        [t],
+    );
+
+    const {
         data: chapterHistoryData,
         loading: isLoading,
         error,
         fetchMore,
         refetch,
-    } = requestManager.useGetRecentlyReadChapters(undefined, {
-        fetchPolicy: 'cache-and-network',
-    });
+    } = requestManager.useGetRecentlyReadChapters(
+        undefined,
+        {
+            fetchPolicy: 'cache-and-network',
+            skip: areSettingsLoading,
+        },
+        historyClearedAt,
+    );
     const hasNextPage = !!chapterHistoryData?.chapters.pageInfo.hasNextPage;
 
     const allReadEntries = chapterHistoryData?.chapters.nodes ?? STABLE_EMPTY_ARRAY;
@@ -139,7 +186,7 @@ export const History: React.FC = () => {
         );
     }
 
-    if (!isLoading && readEntries.length === 0) {
+    if (!isLoading && !areSettingsLoading && readEntries.length === 0) {
         return <EmptyViewAbsoluteCentered message={t`You have not read any series yet.`} />;
     }
 

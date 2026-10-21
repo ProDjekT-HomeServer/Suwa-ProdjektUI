@@ -49,6 +49,8 @@ export const usePress = (
             [onLongPress],
         ),
         {
+            // a moving finger is a scroll or swipe gesture and not a long press
+            cancelOnMovement: 10,
             ...actualOptions,
             onCancel,
             onStart: onCancel,

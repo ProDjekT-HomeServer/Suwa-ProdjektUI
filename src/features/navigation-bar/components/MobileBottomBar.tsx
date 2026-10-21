@@ -6,8 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import Paper from '@mui/material/Paper';
-import type { CSSProperties } from 'react';
+import Box from '@mui/material/Box';
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import {} from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -16,6 +15,7 @@ import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import type { NavbarItem } from '@/features/navigation-bar/NavigationBar.types.ts';
 import { NavigationBarItem } from '@/features/navigation-bar/components/NavigationBarItem.tsx';
 import Stack from '@mui/material/Stack';
+import { CAPSULE_RADIUS, GLASS_FLOATING_MARGIN, liquidGlass, scrollEdgeEffect } from '@/features/theme/LiquidGlass.ts';
 
 export const MobileBottomBar = ({ navBarItems }: { navBarItems: NavbarItem[] }) => {
     const theme = useTheme();
@@ -29,26 +29,34 @@ export const MobileBottomBar = ({ navBarItems }: { navBarItems: NavbarItem[] }) 
     useLayoutEffect(() => () => setBottomBarHeight(0), []);
 
     return (
-        <Paper
+        // the measured wrapper includes the floating margin, thus, the content can scroll below the floating bar
+        <Box
             ref={ref}
             sx={{
                 position: 'fixed',
                 bottom: 0,
                 left: 0,
                 right: 0,
-                pb: 'env(safe-area-inset-bottom)',
-                pl: 'env(safe-area-inset-left)',
-                pr: 'env(safe-area-inset-right)',
+                pt: `${GLASS_FLOATING_MARGIN}px`,
+                pb: `max(env(safe-area-inset-bottom), ${GLASS_FLOATING_MARGIN}px)`,
+                pl: `calc(env(safe-area-inset-left) + ${GLASS_FLOATING_MARGIN}px)`,
+                pr: `calc(env(safe-area-inset-right) + ${GLASS_FLOATING_MARGIN}px)`,
                 zIndex: theme.zIndex.drawer - 1,
+                pointerEvents: 'none',
+                isolation: 'isolate',
+                '&::before': scrollEdgeEffect(theme, 'bottom'),
             }}
-            style={{
-                ...(theme.applyStyles('dark', {
-                    '--Paper-overlay': 'unset',
-                }) as CSSProperties),
-            }}
-            elevation={3}
         >
-            <Stack sx={{ flexDirection: 'row' }}>
+            <Stack
+                component="nav"
+                sx={{
+                    ...liquidGlass(theme, { elevated: true }),
+                    flexDirection: 'row',
+                    borderRadius: CAPSULE_RADIUS,
+                    p: 0.5,
+                    pointerEvents: 'auto',
+                }}
+            >
                 {navBarItems.map((item) => (
                     <NavigationBarItem
                         key={item.path}
@@ -56,7 +64,9 @@ export const MobileBottomBar = ({ navBarItems }: { navBarItems: NavbarItem[] }) 
                         slots={{
                             listItemLink: {
                                 sx: {
-                                    py: 1,
+                                    py: 0.25,
+                                    borderRadius: CAPSULE_RADIUS,
+                                    overflow: 'hidden',
                                 },
                             },
                         }}
@@ -64,6 +74,6 @@ export const MobileBottomBar = ({ navBarItems }: { navBarItems: NavbarItem[] }) 
                     />
                 ))}
             </Stack>
-        </Paper>
+        </Box>
     );
 };

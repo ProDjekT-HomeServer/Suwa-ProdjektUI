@@ -8,13 +8,20 @@
 
 import { useEffect } from 'react';
 import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
+import { useIsTabPreview } from '@/base/components/tabs/TabPreview.tsx';
 import type { NavbarContextType } from '@/features/navigation-bar/NavigationBar.types.ts';
 import { STABLE_EMPTY_ARRAY } from '@/base/Base.constants.ts';
 
 export const useAppAction = (action: NavbarContextType['action'], dependencies: any[] = STABLE_EMPTY_ARRAY) => {
     const { setAction } = useNavBarContext();
+    // previews of adjacent tabs must not replace the app bar of the visible tab
+    const isTabPreview = useIsTabPreview();
 
     useEffect(() => {
+        if (isTabPreview) {
+            return () => {};
+        }
+
         setAction(action);
         return () => setAction(null);
     }, dependencies);

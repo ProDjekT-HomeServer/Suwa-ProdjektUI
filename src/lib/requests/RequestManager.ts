@@ -3554,6 +3554,7 @@ export class RequestManager {
     public useGetRecentlyReadChapters(
         initialPages: number = 1,
         options?: QueryHookOptions<GetChaptersHistoryQuery, GetChaptersHistoryQueryVariables>,
+        readAfter: number = 0,
     ): AbortableApolloUseQueryResponse<GetChaptersHistoryQuery, GetChaptersHistoryQueryVariables> {
         const PAGE_SIZE = 150;
         const CACHE_KEY = 'useGetRecentlyReadChapters';
@@ -3564,7 +3565,7 @@ export class RequestManager {
         const result = this.useGetChapters<GetChaptersHistoryQuery, GetChaptersHistoryQueryVariables>(
             GET_CHAPTERS_HISTORY,
             {
-                filter: { lastReadAt: { isNull: false, notEqualToAll: ['0'] } },
+                filter: { lastReadAt: { isNull: false, notEqualToAll: ['0'], greaterThan: `${readAfter}` } },
                 order: [
                     { by: ChapterOrderBy.LastReadAt, byType: SortOrder.Desc },
                     { by: ChapterOrderBy.SourceOrder, byType: SortOrder.Desc },

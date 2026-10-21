@@ -27,6 +27,7 @@ import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { useMetadataServerSettings } from '@/features/settings/services/ServerSettingsMetadata.ts';
 import { NAVIGATION_BAR_ITEMS } from '@/features/navigation-bar/NavigationBar.constants.ts';
 import { NavigationBarUtil } from '@/features/navigation-bar/NavigationBar.util.ts';
+import { CAPSULE_RADIUS, liquidGlass, scrollEdgeEffect } from '@/features/theme/LiquidGlass.ts';
 
 export function DefaultNavBar() {
     const {
@@ -120,12 +121,19 @@ export function DefaultNavBar() {
         <>
             <AppBar
                 ref={appBarRef}
+                elevation={0}
+                color="transparent"
                 sx={{
                     position: 'fixed',
                     marginLeft: actualNavBarWidth,
                     pt: 'env(safe-area-inset-top)',
                     width: `calc(100% - ${actualNavBarWidth}px)`,
                     zIndex: theme.zIndex.drawer,
+                    color: 'text.primary',
+                    backgroundColor: 'transparent',
+                    backgroundImage: 'none',
+                    // the bar is transparent, content scrolling below it gets dissolved by the scroll edge effect
+                    '&::before': scrollEdgeEffect(theme, 'top'),
                 }}
             >
                 <Toolbar sx={{ position: 'relative' }}>
@@ -156,7 +164,7 @@ export function DefaultNavBar() {
                             <IconButton
                                 edge="start"
                                 component="button"
-                                sx={{ marginRight: 2 }}
+                                sx={{ ...liquidGlass(theme, { interactive: true }), marginRight: 1.5 }}
                                 aria-label="menu"
                                 onClick={handleBack}
                                 color="inherit"
@@ -172,12 +180,31 @@ export function DefaultNavBar() {
                                 sx={{
                                     textOverflow: 'ellipsis',
                                     flexGrow: 1,
+                                    fontWeight: 700,
                                 }}
                             >
                                 {title}
                             </Typography>
                         )}
-                        {action}
+                        {!!action && (
+                            <Stack
+                                sx={{
+                                    ...liquidGlass(theme),
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    flexShrink: 0,
+                                    borderRadius: CAPSULE_RADIUS,
+                                    px: 0.5,
+                                    ml: 1,
+                                    // screens might pass an action that renders nothing
+                                    '&:empty': {
+                                        display: 'none',
+                                    },
+                                }}
+                            >
+                                {action}
+                            </Stack>
+                        )}
                     </Stack>
                 </Toolbar>
             </AppBar>

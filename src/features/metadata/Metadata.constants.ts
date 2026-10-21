@@ -117,6 +117,9 @@ export const APP_METADATA: Record<
     showTabSize: {
         convert: convertToBoolean,
     },
+    hideEmptyCategories: {
+        convert: convertToBoolean,
+    },
     devices: {
         convert: convertToObject<string[]>,
     },
@@ -345,6 +348,12 @@ export const APP_METADATA: Record<
     hideHistory: {
         convert: convertToBoolean,
     },
+    historyClearedAt: {
+        convert: convertToNumber,
+    },
+    incognitoSourceIds: {
+        convert: convertToObject<string[]>,
+    },
     scrollAmount: {
         convert: convertToNumber, // ReaderScrollAmount (enum)
         toConstrainedValue: (value: number) => coerceIn(value, SCROLL_AMOUNT.min, SCROLL_AMOUNT.max),
@@ -444,6 +453,7 @@ export const GLOBAL_METADATA_KEYS: AppMetadataKeys[] = [
     'fuzzySearch',
     'removeMangaFromCategories',
     'showTabSize',
+    'hideEmptyCategories',
 
     // library category options
     // filter
@@ -484,6 +494,8 @@ export const GLOBAL_METADATA_KEYS: AppMetadataKeys[] = [
 
     // history
     'hideHistory',
+    'historyClearedAt',
+    'incognitoSourceIds',
 
     // tracking
     'updateProgressAfterReading',
