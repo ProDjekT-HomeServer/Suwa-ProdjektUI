@@ -8,7 +8,8 @@
 
 import type { PropsWithChildren } from 'react';
 import { RenderGuard } from '@/base/components/guard/RenderGuard.tsx';
+import { isClipboardSupported } from '@/lib/HelperFunctions.ts';
 
 export const ClipBoardGuard = ({ children }: PropsWithChildren) => (
-    <RenderGuard condition={!!navigator.clipboard}>{children}</RenderGuard>
+    <RenderGuard condition={isClipboardSupported()}>{children}</RenderGuard>
 );
