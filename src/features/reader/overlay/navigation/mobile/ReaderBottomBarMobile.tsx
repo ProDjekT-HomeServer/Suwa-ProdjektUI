@@ -9,6 +9,7 @@
 import IconButton from '@mui/material/IconButton';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
 import AppSettingsAltIcon from '@mui/icons-material/AppSettingsAlt';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import { bindDialog, bindTrigger, usePopupState } from 'material-ui-popup-state/hooks';
@@ -24,6 +25,7 @@ import { ReaderChapterList } from '@/features/reader/overlay/navigation/componen
 import { ReaderBottomBarMobileQuickSettings } from '@/features/reader/overlay/navigation/mobile/quick-settings/ReaderBottomBarMobileQuickSettings.tsx';
 import { useResizeObserver } from '@/base/hooks/useResizeObserver.tsx';
 import { useReaderChaptersStore, useReaderScrollbarStore } from '@/features/reader/stores/ReaderStore.ts';
+import { CAPSULE_RADIUS, GLASS_FLOATING_MARGIN, liquidGlass } from '@/features/theme/LiquidGlass.ts';
 
 const BaseReaderBottomBarMobile = ({
     openSettings,
@@ -31,6 +33,7 @@ const BaseReaderBottomBarMobile = ({
     topOffset = 0,
 }: ReaderBottomBarMobileProps & { topOffset?: number }) => {
     const { t } = useLingui();
+    const theme = useTheme();
     const { currentChapterId, chapters } = useReaderChaptersStore((state) => ({
         currentChapterId: state.currentChapter?.id,
         chapters: state.chapters,
@@ -68,20 +71,21 @@ const BaseReaderBottomBarMobile = ({
                         ref={bottomBarRef}
                         sx={{
                             alignItems: 'center',
-                            backgroundColor: (theme) => theme.alpha(theme.palette.background.paper, 0.95),
-                            pb: `max(${scrollbar.xSize}px, env(safe-area-inset-bottom))`,
-                            boxShadow: 2,
-                            pointerEvents: 'all',
+                            pt: `${GLASS_FLOATING_MARGIN}px`,
+                            // floats above the home indicator instead of filling the safe area
+                            pb: `max(${scrollbar.xSize}px, env(safe-area-inset-bottom), ${GLASS_FLOATING_MARGIN}px)`,
                         }}
                     >
                         <Stack
                             sx={{
-                                width: '50%',
+                                ...liquidGlass(theme, { clear: true }),
                                 flexDirection: 'row',
-                                p: 2,
-                                gap: 1,
-                                justifyContent: 'space-evenly',
+                                p: 0.75,
+                                gap: 2,
+                                justifyContent: 'center',
                                 alignItems: 'center',
+                                borderRadius: CAPSULE_RADIUS,
+                                pointerEvents: 'all',
                             }}
                         >
                             <CustomTooltip title={t`Chapter list`}>

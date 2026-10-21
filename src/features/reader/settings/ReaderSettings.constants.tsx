@@ -252,7 +252,8 @@ export const DEFAULT_READER_SETTINGS: IReaderSettings = {
     safeAreaInset: {
         top: true,
         right: true,
-        bottom: true,
+        // the pages extend below the home indicator, as in native readers, instead of leaving an empty strip
+        bottom: false,
         left: true,
     },
     shouldEnterFullscreen: false,

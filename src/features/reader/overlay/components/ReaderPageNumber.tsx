@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import { ReaderService } from '@/features/reader/services/ReaderService.ts';
 import { ProgressBarType, ReadingDirection } from '@/features/reader/Reader.types.ts';
 import { getPage } from '@/features/reader/overlay/progress-bar/ReaderProgressBar.utils.tsx';
@@ -17,6 +18,7 @@ import { useNavBarContext } from '@/features/navigation-bar/NavbarContext.tsx';
 import { reverseString } from '@/base/utils/Strings.ts';
 import type { NavbarContextType } from '@/features/navigation-bar/NavigationBar.types.ts';
 import { withPropsFrom } from '@/base/hoc/withPropsFrom.tsx';
+import { CAPSULE_RADIUS, liquidGlass } from '@/features/theme/LiquidGlass.ts';
 import {
     useReaderPagesStore,
     useReaderProgressBarStore,
@@ -40,7 +42,7 @@ const BaseReaderPageNumber = ({
         }),
     );
     const progressBarSizeInset = isDesktop && progressBarType === ProgressBarType.STANDARD ? progressBarSize : 0;
-    const safeAreaInset = useReaderSettingsStore((state) => state.safeAreaInset);
+    const theme = useTheme();
     const isMaximized = useReaderProgressBarStore('isMaximized');
 
     const pageName = useMemo(() => {
@@ -65,20 +67,24 @@ const BaseReaderPageNumber = ({
                 position: 'fixed',
                 left: readerNavBarWidth,
                 right: 0,
-                bottom: (theme) =>
-                    `calc(${theme.spacing(1)} + ${progressBarSizeInset}px + max(${scrollbar.xSize}px, ${safeAreaInset.bottom ? 'env(safe-area-inset-bottom)' : '0px'}))`,
+                bottom:
+                    // stays above the home indicator even when the pages extend below it
+                    `calc(${theme.spacing(1)} + ${progressBarSizeInset}px + max(${scrollbar.xSize}px, env(safe-area-inset-bottom)))`,
                 alignItems: 'center',
-                transition: (theme) => `left 0.${theme.transitions.duration.shortest}s`,
+                transition: `left 0.${theme.transitions.duration.shortest}s`,
             }}
         >
             <Box
                 sx={{
-                    p: 0.5,
-                    borderRadius: 1,
-                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    ...liquidGlass(theme, { clear: true }),
+                    px: 1.5,
+                    py: 0.25,
+                    borderRadius: CAPSULE_RADIUS,
                 }}
             >
-                <Typography sx={{ color: 'white' }}>{pageName}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                    {pageName}
+                </Typography>
             </Box>
         </Stack>
     );

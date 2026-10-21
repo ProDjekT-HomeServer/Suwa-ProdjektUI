@@ -11,12 +11,14 @@ import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import type { ComponentProps } from 'react';
 import { memo, useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import type { SlideProps } from '@mui/material/Slide';
 import Slide from '@mui/material/Slide';
 import { ReaderProgressBar } from '@/features/reader/overlay/progress-bar/ReaderProgressBar.tsx';
 import { ReaderService } from '@/features/reader/services/ReaderService.ts';
+import { CAPSULE_RADIUS, liquidGlass } from '@/features/theme/LiquidGlass.ts';
 import {
     getPage,
     getProgressBarPositionInfo,
@@ -66,6 +68,8 @@ const BaseMobileReaderProgressBar = ({
         'progressBarPositionAutoVertical',
     );
     const isDragging = useReaderProgressBarStore('isDragging');
+    const theme = useTheme();
+    const chapterButtonSx = useMemo(() => liquidGlass(theme, { clear: true, interactive: true }), [theme]);
 
     const [, setRefreshProgressBarPosition] = useState({});
     useResizeObserver(
@@ -94,9 +98,8 @@ const BaseMobileReaderProgressBar = ({
                     display: 'flex',
                     justifyItems: 'center',
                     alignItems: 'stretch',
-                    backgroundColor: (theme) => theme.alpha(theme.palette.background.paper, 0.85),
-                    borderRadius: 100,
-                    boxShadow: 2,
+                    ...liquidGlass(theme, { clear: true }),
+                    borderRadius: CAPSULE_RADIUS,
                 },
             },
             progressBarRoot: {
@@ -128,8 +131,9 @@ const BaseMobileReaderProgressBar = ({
             },
             progressBarSlotsContainer: {
                 sx: {
-                    borderRadius: 100,
-                    backgroundColor: 'background.default',
+                    borderRadius: CAPSULE_RADIUS,
+                    // a recessed track inside the glass
+                    backgroundColor: theme.alpha(theme.palette.common.black, 0.25),
                     ...applyStyles(isVertical, {
                         flexDirection: 'column',
                         py: 1,
@@ -175,7 +179,7 @@ const BaseMobileReaderProgressBar = ({
                 },
             },
         }),
-        [isVertical, isHorizontal],
+        [isVertical, isHorizontal, theme],
     );
 
     const progressBarCurrentPage = useMemo(
@@ -256,16 +260,8 @@ const BaseMobileReaderProgressBar = ({
                             })
                         }
                         disabled={!previousChapter}
-                        sx={{
-                            backgroundColor: (theme) => theme.alpha(theme.palette.background.paper, 0.85),
-                            boxShadow: 2,
-                            '&:hover': {
-                                backgroundColor: 'background.paper',
-                            },
-                            '&:disabled': {
-                                backgroundColor: (theme) => theme.alpha(theme.palette.background.paper, 0.85),
-                            },
-                        }}
+                        color="inherit"
+                        sx={chapterButtonSx}
                     >
                         {getOptionForDirection(
                             <SkipPreviousIcon
@@ -335,16 +331,8 @@ const BaseMobileReaderProgressBar = ({
                             })
                         }
                         disabled={!nextChapter}
-                        sx={{
-                            backgroundColor: (theme) => theme.alpha(theme.palette.background.paper, 0.85),
-                            boxShadow: 2,
-                            '&:hover': {
-                                backgroundColor: 'background.paper',
-                            },
-                            '&:disabled': {
-                                backgroundColor: (theme) => theme.alpha(theme.palette.background.paper, 0.85),
-                            },
-                        }}
+                        color="inherit"
+                        sx={chapterButtonSx}
                     >
                         {getOptionForDirection(
                             <SkipNextIcon
