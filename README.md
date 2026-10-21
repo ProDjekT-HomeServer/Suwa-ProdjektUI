@@ -13,6 +13,7 @@ It is based on the upstream release `v20260929.01` (r3518), matching the server'
 Additions:
 
 - Library: tab counts and hidden empty categories follow the active filters, carousel swiping between categories, pull to refresh updates the whole library
+- Manga: pull to refresh fetches the manga and its chapters from the source
 - Browse: carousel swiping between Source / Extension / Migrate
 - History: clear the whole history (client side, the server can't reset `lastReadAt`)
 - Sources: incognito mode per source (no reading progress / history)
