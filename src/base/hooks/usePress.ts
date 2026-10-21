@@ -28,8 +28,6 @@ export const usePress = (
     options: Omit<Parameters<typeof useLongPress>[1], 'onCancel' | 'onStart'> & {
         onLongPress: NonNullable<Parameters<typeof useLongPress>[0]>;
         onPress: (event: React.MouseEvent | React.TouchEvent) => void;
-        /** called when releasing a long press */
-        onFinish?: NonNullable<Parameters<typeof useLongPress>[1]>['onFinish'];
     },
 ): UsePressResult => {
     const { onLongPress, onPress, ...actualOptions } = options;

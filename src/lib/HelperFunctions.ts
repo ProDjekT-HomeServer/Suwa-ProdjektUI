@@ -106,12 +106,24 @@ export const maybeExecuteWithDelay = (
  * The deprecated "copy" command still works there, as long as it gets executed during a user activation.
  */
 const copyViaCommand = (text: string) => {
+    // based on clipboard.js, which works on iOS
     const textArea = document.createElement('textarea');
     textArea.value = text;
-    textArea.readOnly = true;
-    // prevents scrolling to the element and zooming into it on iOS
-    textArea.style.cssText = 'position: fixed; top: 0; left: 0; opacity: 0; font-size: 16px;';
+    // prevents zooming into the element on iOS
+    textArea.style.fontSize = '16px';
+    textArea.style.border = '0';
+    textArea.style.padding = '0';
+    textArea.style.margin = '0';
+    textArea.style.position = 'absolute';
+    textArea.style.left = '-9999px';
+    // prevents scrolling to the element
+    textArea.style.top = `${window.scrollY}px`;
+    // prevents the keyboard from showing up
+    textArea.setAttribute('readonly', '');
     document.body.appendChild(textArea);
+
+    const selection = document.getSelection();
+    const previousRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
 
     try {
         textArea.select();
@@ -119,10 +131,14 @@ const copyViaCommand = (text: string) => {
         textArea.setSelectionRange(0, text.length);
 
         if (!document.execCommand('copy')) {
-            throw new Error('The "copy" command is not supported');
+            throw new Error('The "copy" command was rejected');
         }
     } finally {
         textArea.remove();
+        if (previousRange) {
+            selection?.removeAllRanges();
+            selection?.addRange(previousRange);
+        }
     }
 };
 
