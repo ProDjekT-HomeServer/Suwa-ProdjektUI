@@ -13,7 +13,7 @@ It is based on the upstream release `v20260929.01` (r3518), matching the server'
 Additions:
 
 - Library: tab counts and hidden empty categories follow the active filters, carousel swiping between categories, pull to refresh updates the whole library
-- Manga: pull to refresh fetches the manga and its chapters from the source; tapping the title or an author searches all sources, long pressing copies it
+- Manga: pull to refresh fetches the manga and its chapters from the source; tapping the title or an author searches all sources, copy buttons next to the title, the authors and the artists
 - Navigation: swiping to the right goes back on every page with a back button (installed iOS web apps have no edge swipe)
 - Reader: Liquid Glass overlay (floating clear glass header, bottom capsule, progress bar and page number), the pages extend below the home indicator; double tap zooms in on the tapped point and back out; no reading mode toast when opening a chapter; the scanlator change warning is off by default
 - Browse: carousel swiping between Source / Extension / Migrate

@@ -142,6 +142,26 @@ const MetadataContainer = styled('div')(({ theme }) => ({
 
 const Metadata = (props: ComponentProps<typeof BaseMetadata>) => <BaseMetadata {...props} />;
 
+const CopyButton = ({ text, isInline = false }: { text: string; isInline?: boolean }) => {
+    const { t } = useLingui();
+
+    return (
+        <ClipBoardGuard>
+            <CustomTooltip title={t`Copy`}>
+                <IconButton
+                    onClick={() => copyToClipboard(text)}
+                    color="inherit"
+                    size={isInline ? 'small' : 'medium'}
+                    // inline buttons must not increase the line height of the text
+                    sx={isInline ? { p: 0.25, ml: 0.5, my: -0.5 } : undefined}
+                >
+                    <ContentCopyIcon fontSize={isInline ? 'inherit' : 'small'} />
+                </IconButton>
+            </CustomTooltip>
+        </ClipBoardGuard>
+    );
+};
+
 const MangaButtonsContainer = styled('div')(({ theme }) => ({
     display: 'flex',
     gap: theme.spacing(1),
@@ -251,19 +271,29 @@ export const MangaDetails = ({
                                     {manga.title}
                                 </Typography>
                             </SearchLink>
-                            <ClipBoardGuard>
-                                <CustomTooltip title={t`Copy`}>
-                                    <IconButton onClick={() => copyToClipboard(manga.title)} color="inherit">
-                                        <ContentCopyIcon fontSize="small" />
-                                    </IconButton>
-                                </CustomTooltip>
-                            </ClipBoardGuard>
+                            <CopyButton text={manga.title} />
                         </Stack>
                         {manga.author && (
-                            <Metadata title={t`Author`} value={valuesToJoinedSearchLinks(Mangas.getAuthors(manga))} />
+                            <Metadata
+                                title={t`Author`}
+                                value={
+                                    <>
+                                        {valuesToJoinedSearchLinks(Mangas.getAuthors(manga))}
+                                        <CopyButton text={manga.author} isInline />
+                                    </>
+                                }
+                            />
                         )}
                         {manga.artist && (
-                            <Metadata title={t`Artist`} value={valuesToJoinedSearchLinks(Mangas.getArtists(manga))} />
+                            <Metadata
+                                title={t`Artist`}
+                                value={
+                                    <>
+                                        {valuesToJoinedSearchLinks(Mangas.getArtists(manga))}
+                                        <CopyButton text={manga.artist} isInline />
+                                    </>
+                                }
+                            />
                         )}
                         <Metadata title={t`Status`} value={t(MANGA_STATUS_TO_TRANSLATION[manga.status])} />
                         <Metadata title={t`Source`} value={getSourceName(manga.source)} />
