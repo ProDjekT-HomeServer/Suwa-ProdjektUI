@@ -12,6 +12,8 @@ import { Link as RouterLink } from 'react-router-dom';
 import type { MangaLocationState } from '@/features/manga/Manga.types.ts';
 import type { SourceIdInfo } from '@/features/source/Source.types.ts';
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
+import { usePress } from '@/base/hooks/usePress.ts';
+import { copyToClipboard, noOp } from '@/lib/HelperFunctions.ts';
 
 export const SearchLink = ({
     query,
@@ -37,8 +39,21 @@ export const SearchLink = ({
         return AppRoutes.library.path(undefined, query);
     })();
 
+    // long pressing copies the query
+    const bindPress = usePress({
+        onLongPress: noOp,
+        // the clipboard requires a user activation, which iOS only grants on releasing the finger and not via a timer
+        onFinish: () => copyToClipboard(query),
+        onPress: noOp,
+    });
+
     return (
-        <Link component={RouterLink} to={link} sx={{ textDecoration: 'none', color: 'inherit' }}>
+        <Link
+            component={RouterLink}
+            to={link}
+            {...bindPress()}
+            sx={{ textDecoration: 'none', color: 'inherit', WebkitTouchCallout: 'none', userSelect: 'none' }}
+        >
             {children ?? query}
         </Link>
     );

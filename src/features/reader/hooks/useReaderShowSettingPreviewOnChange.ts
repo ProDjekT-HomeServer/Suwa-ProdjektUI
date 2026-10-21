@@ -41,7 +41,9 @@ export const useReaderShowSettingPreviewOnChange = (
         }
 
         const didReadingModeChange = JSON.stringify(readingMode) !== JSON.stringify(previousReadingMode.current);
-        const showReadingModePreview = shouldShowReadingModePreview && didReadingModeChange;
+        // the reading mode only gets shown when changing it and not when opening the reader
+        const showReadingModePreview =
+            shouldShowReadingModePreview && didReadingModeChange && !!previousReadingMode.current;
         if (showReadingModePreview) {
             makeToast(t(READING_MODE_VALUE_TO_DISPLAY_DATA[readingMode.value].title as MessageDescriptor), {
                 autoHideDuration: HIDE_PREVIEW_TIMEOUT,

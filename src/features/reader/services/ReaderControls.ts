@@ -575,16 +575,16 @@ class ReaderControlsClass {
         updateCurrentPageIndex(firstVisibleImageIndex, firstVisibleImageIndex !== lastPageIndex);
     }
 
-    handleClick(scrollElement: HTMLElement | null, e: React.MouseEvent<HTMLDivElement, MouseEvent>): void {
+    handleClick(scrollElement: HTMLElement | null, clientX: number, clientY: number): void {
         if (!scrollElement || !this.checkAndUpdateWindowsFocus()) {
             return;
         }
 
         const { readingMode, readingDirection, isStaticNav, scrollAmount } = getReaderSettingsStore();
 
-        const rect = e.currentTarget.getBoundingClientRect();
-        const rectRelativeX = e.clientX - rect.left;
-        const rectRelativeY = e.clientY - rect.top;
+        const rect = scrollElement.getBoundingClientRect();
+        const rectRelativeX = clientX - rect.left;
+        const rectRelativeY = clientY - rect.top;
         const action = ReaderTapZoneService.getAction(rectRelativeX, rectRelativeY);
 
         getReaderTapZoneStore().setShowPreview(false);
